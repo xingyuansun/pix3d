@@ -31,6 +31,7 @@ git clone git@github.com:xingyuansun/pix3d.git
 cd pix3d
 ./download_dataset.sh
 ```
+The Pix3D dataset is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 
 ## Dataset
 
@@ -49,7 +50,7 @@ For each instance in Pix3D, we provide the following information (stored in `pix
 - `rot_mat`: rotation matrix of the object (used in rendering)
 - `trans_mat`: translation matrix of the object (used in rendering)
 - `focal_length`: estimated focal length (in mm, and the width of the sensor is fixed to 32mm; used in rendering)
-- `cam_position`: estimated camera position assuming the object is at the origin, and the camera is looking at the object center. The coordinates are defined in 3d model's renderence frame, not voxel's. Camera's up vector is `+y`. (used in the evaluation)
+- `cam_position`: estimated camera position assuming the object is at the origin, and the camera is looking at the object center. The coordinates are defined in 3d model's reference frame, not voxel's. The camera's up vector is `+y`. (used in the evaluation)
 - `inplane_rotation`: estimated inplane camera rotation assuming the object is at the origin, and the camera is looking at the object. (positive value: clockwise rotation, unit: radian; used in the evaluation).
 - `truncated`: whether the object is truncated: "true" or "false"
 - `occluded`: whether the object is occluded: "true" or "false"
@@ -120,7 +121,7 @@ You can evaluate your predictions on Pix3D with `eval/eval.py`. The file takes t
 
 As different voxelization methods may result in objects of different scales in the voxel grid, for a fair comparison, we preprocess all voxels and point clouds before calculating IoU, CD and EMD. 
 
-For IoU, we first find the bounding box of the object with a threshold of 0.1, pad the bounding box into a cube, and then use trilinear interpolation to resample to the desired resolution (32 x 32 x 32). Some algorithms reconstruct shapes at a resolution of 128 x 128 x 128. In this case, we first, apply a 4x max pooling before trilinear interpolation; without the max pooling, the sampling grid can be too sparse and some thin structure can be left out. After the resampling of both the output voxel and the ground truth voxel, we search for an optimal threshold that maximizes the average IoU score over all objects, from 0.01 to 0.50 with a step size of 0.01. 
+For IoU, we first find the bounding box of the object with a threshold of 0.1, pad the bounding box into a cube, and then use trilinear interpolation to resample to the desired resolution (32 x 32 x 32). Some algorithms reconstruct shapes at a resolution of 128 x 128 x 128. In this case, we first, apply a 4x max-pooling before trilinear interpolation; without the max pooling, the sampling grid can be too sparse and some thin structure can be left out. After the resampling of both the output voxel and the ground truth voxel, we search for an optimal threshold that maximizes the average IoU score over all objects, from 0.01 to 0.50 with a step size of 0.01. 
 
 For CD and EMD, we first sample a point cloud from the voxelized reconstructions. For each shape, we compute its isosurface with a threshold of 0.1, and then sample 1,024 points from the surface. All point clouds are then translated and scaled such that the bounding box of the point cloud is centered at the origin with its longest side being 1. We then compute CD and EMD for each pair of point clouds. 
 
@@ -141,7 +142,7 @@ Then, you can evaluate the output by executing the following command in the `eva
 CUDA_VISIBLE_DEVICES=0 python eval.py --list1_path ./list/baseline_output.txt --list1_max_value 255 --list2_path ./list/gt.txt --calc_cd --calc_emd --calc_iou --threshold 0.1 --output_path results.csv
 ```
 
-Your resutls should be around 0.287 for IoU, 0.119 for CD, and 0.120 for EMD, corresponding to the last row of Table 3 in the paper. The numbers might be slightly different from the those reported in the paper because
+Your results should be around 0.287 for IoU, 0.119 for CD, and 0.120 for EMD, corresponding to the last row of Table 3 in the paper. The numbers might be slightly different from those reported in the paper because
 
 - There is randomness in sampling points from voxels;
 - We use an approximation algorithm for calculating EMD;
