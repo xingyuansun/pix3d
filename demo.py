@@ -74,7 +74,7 @@ def add_object(model_path, rot_mat=((1, 0, 0), (0, 1, 0), (0, 0, 1)),
         trans_4x4 = Matrix.Translation(trans_vec)
         rot_4x4 = Matrix(rot_mat).to_4x4()
         scale_4x4 = Matrix(np.eye(4)) # don't scale here
-        obj.matrix_world = trans_4x4 * rot_4x4 * scale_4x4
+        obj.matrix_world = trans_4x4 @ rot_4x4 @ scale_4x4
 
         # Scale
         obj.scale = (scale, scale, scale)
@@ -130,7 +130,7 @@ def render(data, output_path):
 
     # Remove all default objects
     for obj in bpy.data.objects:
-        obj.select = True
+        obj.select_set(True)
     bpy.ops.object.delete()
 
     # Object
